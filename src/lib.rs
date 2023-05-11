@@ -3,6 +3,9 @@ use std::{
     collections::HashMap,
     io::{StdoutLock, Write},
 };
+use crate::payload::Payload;
+
+mod payload;
 
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -24,38 +27,6 @@ pub struct Body {
     payload: Payload,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-#[serde(rename_all = "snake_case")]
-pub enum Payload {
-    Echo {
-        echo: String,
-    },
-    EchoOk {
-        echo: String,
-    },
-    Init {
-        node_id: String,
-        node_ids: Vec<String>,
-    },
-    InitOk,
-    Generate,
-    GenerateOk {
-        id: String,
-    },
-    Broadcast {
-        message: usize,
-    },
-    BroadcastOk,
-    Read,
-    ReadOk {
-        messages: Vec<usize>,
-    },
-    TopologyOk,
-    Topology {
-        topology: HashMap<String, Vec<usize>>,
-    },
-}
 
 pub struct EchoNode {
     pub id: usize,
