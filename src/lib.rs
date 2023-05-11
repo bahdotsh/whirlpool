@@ -1,5 +1,8 @@
 use anyhow::{bail, Context};
-use std::{io::{StdoutLock, Write}, collections::HashMap};
+use std::{
+    collections::HashMap,
+    io::{StdoutLock, Write},
+};
 
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -51,7 +54,7 @@ pub enum Payload {
     TopologyOk,
     Topology {
         topology: HashMap<String, Vec<usize>>,
-    }
+    },
 }
 
 pub struct EchoNode {
@@ -63,7 +66,7 @@ pub struct EchoNode {
 impl EchoNode {
     pub fn step(&mut self, input: Message, output: &mut StdoutLock) -> anyhow::Result<()> {
         match input.body.payload {
-             Payload::Broadcast { message } => {
+            Payload::Broadcast { message } => {
                 self.messages.push(message);
                 let reply = Message {
                     src: input.dest,
@@ -75,11 +78,10 @@ impl EchoNode {
                     },
                 };
                 serde_json::to_writer(&mut *output, &reply)
-                .context("serialize response to Read")?;
+                    .context("serialize response to Read")?;
                 output.write_all(b"\n").context("write trailing line")?;
-                
             }
-             Payload::Topology { topology } => {
+            Payload::Topology { topology } => {
                 self.known = topology;
                 let reply = Message {
                     src: input.dest,
@@ -91,9 +93,8 @@ impl EchoNode {
                     },
                 };
                 serde_json::to_writer(&mut *output, &reply)
-                .context("serialize response to topology")?;
+                    .context("serialize response to topology")?;
                 output.write_all(b"\n").context("write trailing line")?;
-                
             }
             Payload::Read { .. } => {
                 let reply = Message {
@@ -109,9 +110,8 @@ impl EchoNode {
                 };
 
                 serde_json::to_writer(&mut *output, &reply)
-                .context("serialize response to Read")?;
+                    .context("serialize response to Read")?;
                 output.write_all(b"\n").context("write trailing line")?;
-                
             }
             Payload::Generate { .. } => {
                 let reply = Message {
@@ -160,7 +160,7 @@ impl EchoNode {
             Payload::EchoOk { .. } => bail!("recieved init_ok Message"),
             Payload::InitOk { .. } => {}
             Payload::GenerateOk { .. } => bail!("recieved generate_ok Message"),
-            Payload::ReadOk{ .. } => bail!("recieved read_ok Message"),
+            Payload::ReadOk { .. } => bail!("recieved read_ok Message"),
             Payload::BroadcastOk { .. } => bail!("recieved BroadcastOk Message"),
             Payload::TopologyOk { .. } => bail!("recieved TopologyOk Message"),
         }
