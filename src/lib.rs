@@ -30,15 +30,29 @@ pub struct Body {
 
 pub struct EchoNode {
     pub id: usize,
-    pub messages: Vec<usize>,
+    pub value: usize,
     pub known: HashMap<String, Vec<usize>>,
 }
 
 impl EchoNode {
     pub fn step(&mut self, input: Message, output: &mut StdoutLock) -> anyhow::Result<()> {
         match input.body.payload {
-            Payload::Broadcast { message } => {
-                self.messages.push(message);
+            Payload::Add { delta } => {
+                self.value += delta;
+                let reply = Message {
+                    src: input.dest,
+                    dest: input.src,
+                    body: Body {
+                        id: Some(self.id),
+                        in_reply_to: input.body.id,
+                        payload: Payload::AddOk,
+                    },
+                };
+                serde_json::to_writer(&mut *output, &reply)
+                    .context("serialize response to Read")?;
+                output.write_all(b"\n").context("write trailing line")?;
+            }
+            Payload::Broadcast { .. } => {
                 let reply = Message {
                     src: input.dest,
                     dest: input.src,
@@ -75,7 +89,7 @@ impl EchoNode {
                         id: Some(self.id),
                         in_reply_to: input.body.id,
                         payload: Payload::ReadOk {
-                            messages: self.messages.clone(),
+                            value: self.value.clone(),
                         },
                     },
                 };
@@ -134,6 +148,7 @@ impl EchoNode {
             Payload::ReadOk { .. } => bail!("recieved read_ok Message"),
             Payload::BroadcastOk { .. } => bail!("recieved BroadcastOk Message"),
             Payload::TopologyOk { .. } => bail!("recieved TopologyOk Message"),
+            Payload::AddOk { .. } => bail!("recieved AddOk Message"),
         }
         self.id += 1;
         Ok(())

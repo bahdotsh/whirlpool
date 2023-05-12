@@ -10,7 +10,7 @@ fn main() -> anyhow::Result<()> {
 
     let mut state = EchoNode {
         id: 0,
-        messages: Vec::new(),
+        value: 0,
         known: HashMap::new(),
     };
     for input in inputs {

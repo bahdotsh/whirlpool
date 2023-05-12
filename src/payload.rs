@@ -5,6 +5,10 @@ use serde::{ Serialize, Deserialize};
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]
 pub enum Payload {
+    Add {
+        delta: usize,
+    },
+    AddOk,
     Echo {
         echo: String,
     },
@@ -26,7 +30,7 @@ pub enum Payload {
     BroadcastOk,
     Read,
     ReadOk {
-        messages: Vec<usize>,
+        value: usize,
     },
     TopologyOk,
     Topology {
